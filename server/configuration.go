@@ -1,0 +1,98 @@
+package server
+
+import (
+	"sync"
+
+	"github.com/raefon/kuber/environment"
+)
+
+type RocketConfiguration struct {
+	// The internal UUID of the Rocket on the Panel.
+	ID string `json:"id"`
+
+	// Maintains a list of files that are blacklisted for opening/editing/downloading
+	// or basically any type of access on the server by any user. This is NOT the same
+	// as a per-user denylist, this is defined at the Rocket level.
+	FileDenylist []string `json:"file_denylist"`
+}
+
+type ConfigurationMeta struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+type Configuration struct {
+	mu sync.RWMutex
+
+	// The unique identifier for the server that should be used when referencing
+	// it against the Panel API (and internally). This will be used when naming
+	// docker containers as well as in log output.
+	Uuid string `json:"uuid"`
+
+	Meta ConfigurationMeta `json:"meta"`
+
+	// Whether or not the server is in a suspended state. Suspended servers cannot
+	// be started or modified except in certain scenarios by an admin user.
+	Suspended bool `json:"suspended"`
+
+	// The command that should be used when booting up the server instance.
+	Invocation string `json:"invocation"`
+
+	// By default this is false, however if selected within the Panel while installing or re-installing a
+	// server, specific installation scripts will be skipped for the server process.
+	SkipRocketScripts bool `json:"skip_rocket_scripts"`
+
+	// An array of environment variables that should be passed along to the running
+	// server process.
+	EnvVars environment.Variables `json:"environment"`
+
+	// Labels is a map of container labels that should be applied to the running server process.
+	Labels map[string]string `json:"labels"`
+
+	Ports                 environment.Ports       `json:"ports"`
+	Allocations           environment.Allocations `json:"allocations"`
+	Build                 environment.Limits      `json:"build"`
+	CrashDetectionEnabled bool                    `json:"crash_detection_enabled"`
+	Mounts                []Mount                 `json:"mounts"`
+	Rocket                RocketConfiguration     `json:"rocket,omitempty"`
+
+	NodeSelectors map[string]string `json:"node_selectors"`
+
+	StorageClass string `json:"storage_class"`
+
+	Container struct {
+		// Defines the Docker image that will be used for this server
+		Image string `json:"image,omitempty"`
+	} `json:"container,omitempty"`
+}
+
+func (s *Server) Config() *Configuration {
+	s.cfg.mu.RLock()
+	defer s.cfg.mu.RUnlock()
+	return &s.cfg
+}
+
+// DiskSpace returns the amount of disk space available to a server in bytes.
+func (s *Server) DiskSpace() int64 {
+	s.cfg.mu.RLock()
+	defer s.cfg.mu.RUnlock()
+	return s.cfg.Build.DiskSpace * 1024.0 * 1024.0
+}
+
+func (s *Server) MemoryLimit() int64 {
+	s.cfg.mu.RLock()
+	defer s.cfg.mu.RUnlock()
+	return s.cfg.Build.MemoryLimit
+}
+
+func (c *Configuration) GetUuid() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.Uuid
+}
+
+func (c *Configuration) SetSuspended(s bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.Suspended = s
+}
