@@ -428,6 +428,9 @@ func (e *Environment) Create() error {
 			fileReplaceOps.Files = append(fileReplaceOps.Files, fileOp)
 		}
 		binaryFileOpData, err := json.Marshal(fileReplaceOps)
+		if err != nil {
+			return errors2.Wrap(err, "failed to marshal fileReplaceOps")
+		}
 		binData := make(map[string][]byte)
 		binData["config.json"] = binaryFileOpData
 		newConfigMap := &corev1.ConfigMap{
@@ -1044,10 +1047,10 @@ func (e *Environment) SendCommand(c string) error {
 		Tty:   true,
 	})
 	if err != nil {
-		return err
+		return errors2.Wrap(err, "environment/kubernetes: could not write to container stream")
 	}
 
-	return errors2.Wrap(err, "environment/kubernetes: could not write to container stream")
+	return nil
 }
 
 // Readlog reads the log file for the server. This does not care if the server
