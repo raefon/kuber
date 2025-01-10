@@ -478,7 +478,7 @@ func (ip *InstallationProcess) Execute() (string, error) {
 		},
 		Spec: corev1.PersistentVolumeClaimSpec{
 			AccessModes: []corev1.PersistentVolumeAccessMode{
-				corev1.PersistentVolumeAccessMode("ReadWriteOnce"),
+				corev1.PersistentVolumeAccessMode("ReadWriteMany"),
 			},
 			Resources: corev1.ResourceRequirements{
 				Requests: corev1.ResourceList{
