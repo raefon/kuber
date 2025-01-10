@@ -132,7 +132,7 @@ type SystemConfiguration struct {
 
 	// TmpDirectory specifies where temporary files for Kubectyl installation processes
 	// should be created. This supports environments running docker-in-docker.
-	TmpDirectory string `default:"/tmp/kubectyl" yaml:"tmp_directory"`
+	TmpDirectory string `default:"/var/log/kubectyl" yaml:"tmp_directory"`
 
 	// The timezone for this Kuber instance. This is detected by Kuber automatically if possible,
 	// and falls back to UTC if not able to be detected. If you need to set this manually, that
