@@ -366,6 +366,10 @@ func (e *Environment) Create() error {
 							ReadOnly:  true,
 							MountPath: path.Join(cfg.System.Data, ".sftp"),
 						},
+						{
+							Name:      "logs",
+							MountPath: path.Dir(cfg.System.LogDirectory),
+						},
 					},
 				},
 			},
@@ -873,7 +877,7 @@ func (e *Environment) CreateSFTP(ctx context.Context, cancelFunc context.CancelF
 						},
 						{
 							Name:      "logs",
-							MountPath: cfg.System.LogDirectory,
+							MountPath: path.Dir(cfg.System.LogDirectory),
 						},
 					},
 				},
