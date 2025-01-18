@@ -163,9 +163,12 @@ func (s *Server) HandlePowerAction(action PowerAction, waitSeconds ...int) error
 			return err
 		}
 
-		// if err := s.Environment.CreateSFTP(s.Context()); err != nil {
-		// 	return err
-		// }
+		ctx, cancel := context.WithCancel(s.Context())
+		defer cancel()
+
+		if err := s.Environment.CreateSFTP(ctx, cancel); err != nil {
+			return err
+		}
 
 		if action == PowerActionStop {
 			return nil
